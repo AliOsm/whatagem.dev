@@ -1,0 +1,27 @@
+# Layered Rails Gems
+
+> A field guide to the 70 Ruby and Rails gems recommended in *Layered Design for Ruby on Rails Applications, Second Edition* (Vladimir Dementyev, Packt, December 2025) — the 36 formal “What a gem” callouts plus the 34 inline picks the book actively recommends — organized by the architectural layer each gem belongs to, with a book page number and a minimal usage example.
+
+This is an independent, fan-made catalogue. Gem names, links, and page numbers are drawn from the book; the descriptions and code examples are original. Not affiliated with the author or Packt. Excluded on purpose: gems the book uses as cautionary examples, pure framework plumbing, and libraries named only to illustrate a category rather than endorse it.
+
+## Resources
+
+- [Full catalogue (Markdown)](https://whatagem.dev/llms-full.txt): every gem with description, install name, layer, book page, source link, and a Ruby example.
+- [Structured data (JSON)](https://whatagem.dev/gems.json): the same catalogue as a machine-readable array.
+- [Website](https://whatagem.dev/): searchable, filterable HTML version.
+
+## Layers (13)
+
+- **HTTP and runtime** (2): The request's front door — web servers and the Rack interface. puma, falcon
+- **Data and persistence** (10): Models, the database, and everything that outlives a request. logidze, pg_trunk, rom, database_consistency, database_validations, store_model, frozen_record, activerecord-slotted_counters, discard, arel-helpers
+- **Jobs and scheduling** (6): Work pushed outside the request cycle. sidekiq, solid_queue, good_job, globalid, active_job-performs, acidic_job
+- **Architecture and design** (8): Service objects, events, and dependency boundaries. active_event_store, downstream, active_record-associated_object, dry-effects, interactor, dry-initializer, dry-monads, dry-container
+- **State and workflow** (3): Modeling lifecycles and state transitions. rails-pattern_matching, workflow, workflow-activerecord
+- **Controllers and input** (4): Turning params into safe, scoped queries. after_commit_everywhere, filterameter, has_scope, rubanok
+- **Presentation and JSON** (4): Presenters and serializers at the view boundary. keynote, jbuilder, alba, typelizer
+- **Views and frontend** (4): Component-based HTML and template abstractions. view_component, papercraft, phlex, lookbook
+- **Authorization and notification** (4): Who may act — and who gets told. action_policy, action_native_push, active_delivery, noticed
+- **Media and realtime** (2): Files, images, and streaming. image_processing, imgproxy-rails
+- **AI and agents** (8): LLMs, embeddings, agents, and MCP inside Rails. ruby-openai, activeagent, ruby_llm-schema, ruby_llm, prompt_engine, baran, neighbor, fast-mcp
+- **Configuration and infrastructure** (3): Config objects, env, and observability. dotenv, anyway_config, yabeda
+- **Testing and quality** (12): Benchmarks, linters, and test tooling. trace_location, gvl-tracing, gvltools, benchmark-ips, benchmark-memory, attractor, flog, callback_hell, with_model, erb_lint, capybara, webmock

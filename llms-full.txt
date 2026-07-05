@@ -1,0 +1,1290 @@
+# Layered Rails Gems — Full Catalogue
+
+> 70 Ruby and Rails gems recommended in *Layered Design for Ruby on Rails Applications, Second Edition* (Vladimir Dementyev, Packt, December 2025), organized by architectural layer. 36 are formal “What a gem” callouts; 34 are inline recommendations. Descriptions and code examples are original; gem names, links, and page numbers are from the book. `page` is the book's printed page number.
+
+Source: https://whatagem.dev/  ·  JSON: https://whatagem.dev/gems.json  ·  Generated: 2026-07-05
+
+---
+
+## 1. HTTP and runtime
+
+*The request's front door — web servers and the Rack interface.* (2 gems)
+
+### Puma
+
+- **gem:** `puma`  ·  install: `bundle add puma`
+- **kind:** Inline recommendation  ·  **layer:** HTTP and runtime
+- **book:** Chapter 1, page 31
+- **source:** https://github.com/puma/puma
+
+Multi-threaded, optionally clustered Rack web server and the Rails default; it accepts connections and turns raw HTTP into Rack requests your app can handle.
+
+```ruby
+# config/puma.rb
+workers ENV.fetch("WEB_CONCURRENCY", 2)
+threads 5, 5
+
+# Boot the app:
+# bundle exec puma -C config/puma.rb
+```
+
+### Falcon
+
+- **gem:** `falcon`  ·  install: `bundle add falcon`
+- **kind:** Inline recommendation  ·  **layer:** HTTP and runtime
+- **book:** Chapter 1, page 42
+- **source:** https://github.com/socketry/falcon
+
+Fiber-based, multi-process web server that leverages Rails' fiber-readiness to handle concurrent I/O without dedicating a thread to every in-flight request.
+
+```ruby
+# Gemfile
+gem "falcon"
+
+# Serve a Rack app on the async reactor:
+# bundle exec falcon serve --bind http://localhost:3000
+```
+
+## 2. Data and persistence
+
+*Models, the database, and everything that outlives a request.* (10 gems)
+
+### Logidze
+
+- **gem:** `logidze`  ·  install: `bundle add logidze`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 1, page 48
+- **source:** https://github.com/palkan/logidze
+
+Database-level change tracking with a Ruby API for audit trails and record time travel.
+
+```ruby
+# migration
+add_column :posts, :log_data, :jsonb
+create_logidze_trigger :posts
+
+class Post < ApplicationRecord
+  has_logidze
+end
+```
+
+### pg_trunk
+
+- **gem:** `pg_trunk`  ·  install: `bundle add pg_trunk`
+- **kind:** Inline recommendation  ·  **layer:** Data and persistence
+- **book:** Chapter 1, page 49
+- **source:** https://github.com/nepalez/pg_trunk
+
+Rails migration helpers for PostgreSQL-specific objects such as domains, types, and functions.
+
+```ruby
+class AddEmailDomain < ActiveRecord::Migration[8.0]
+  def change
+    create_domain :email_address, as: :text
+  end
+end
+```
+
+### ROM
+
+- **gem:** `rom`  ·  install: `bundle add rom`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 2, page 56
+- **source:** https://rom-rb.org
+
+Persistence and mapping toolkit for Data Mapper-style Ruby applications.
+
+```ruby
+# Gemfile
+gem "rom"
+gem "rom-sql"
+
+config = ROM::Configuration.new(:sql, ENV.fetch("DATABASE_URL"))
+container = ROM.container(config)
+```
+
+### database_consistency
+
+- **gem:** `database_consistency`  ·  install: `bundle add database_consistency`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 2, page 61
+- **source:** https://github.com/djezzzl/database_consistency
+
+Checks whether Rails validations and database constraints drift apart.
+
+```ruby
+# Gemfile
+gem "database_consistency", group: :development
+
+# Run consistency checks.
+bundle exec database_consistency
+```
+
+### database_validations
+
+- **gem:** `database_validations`  ·  install: `bundle add database_validations`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 2, page 61
+- **source:** https://github.com/toptal/database_validations
+
+Active Record validators that expect matching database constraints.
+
+```ruby
+# Gemfile
+gem "database_validations"
+
+class User < ApplicationRecord
+  validates :email, db_uniqueness: true
+end
+```
+
+### Store Model
+
+- **gem:** `store_model`  ·  install: `bundle add store_model`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 2, page 68
+- **source:** https://github.com/DmitryTsepelev/store_model
+
+Active Model objects backed by JSON columns or stores.
+
+```ruby
+class Address
+  include StoreModel::Model
+  attribute :city, :string
+end
+
+class User < ApplicationRecord
+  attribute :address, Address.to_type
+end
+```
+
+### Frozen Record
+
+- **gem:** `frozen_record`  ·  install: `bundle add frozen_record`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 2, page 71
+- **source:** https://github.com/byroot/frozen_record
+
+Read-only model layer over static YAML or JSON files.
+
+```ruby
+class Country < FrozenRecord::Base
+  self.base_path = Rails.root.join("config/data")
+end
+
+Country.find("JO")
+```
+
+### Active Record Slotted Counters
+
+- **gem:** `activerecord-slotted_counters`  ·  install: `bundle add activerecord-slotted_counters`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 4, page 104
+- **source:** https://github.com/evilmartians/activerecord-slotted_counters
+
+Reduces counter-cache lock contention by spreading counts across slots.
+
+```ruby
+class Post < ApplicationRecord
+  has_many :comments
+  slotted_counter :comments_count
+end
+```
+
+### Discard
+
+- **gem:** `discard`  ·  install: `bundle add discard`
+- **kind:** Inline recommendation  ·  **layer:** Data and persistence
+- **book:** Chapter 4, page 111
+- **source:** https://github.com/jhawthorn/discard
+
+Lightweight soft deletion: it flips a discarded_at timestamp instead of destroying rows and adds kept/discarded scopes, hidden behind a concern in the book.
+
+```ruby
+# add_column :posts, :discarded_at, :datetime
+class Post < ApplicationRecord
+  include Discard::Model
+end
+
+post.discard   # sets discarded_at
+Post.kept       # rows still active
+```
+
+### arel-helpers
+
+- **gem:** `arel-helpers`  ·  install: `bundle add arel-helpers`
+- **kind:** What a gem  ·  **layer:** Data and persistence
+- **book:** Chapter 6, page 163
+- **source:** https://github.com/camertron/arel-helpers
+
+Arel extensions that reduce query-building boilerplate.
+
+```ruby
+class Post < ApplicationRecord
+  include ArelHelpers::ArelTable
+  include ArelHelpers::JoinAssociation
+end
+
+Post.where(Post[:published].eq(true))
+```
+
+## 3. Jobs and scheduling
+
+*Work pushed outside the request cycle.* (6 gems)
+
+### Sidekiq
+
+- **gem:** `sidekiq`  ·  install: `bundle add sidekiq`
+- **kind:** What a gem  ·  **layer:** Jobs and scheduling
+- **book:** Chapter 1, page 43
+- **source:** https://github.com/mperham/sidekiq
+
+Threaded background job processor backed by Redis.
+
+```ruby
+# config/application.rb
+config.active_job.queue_adapter = :sidekiq
+
+class SummaryJob < ApplicationJob
+  def perform(post_id) = Post.find(post_id).summarize!
+end
+```
+
+### Solid Queue
+
+- **gem:** `solid_queue`  ·  install: `bundle add solid_queue`
+- **kind:** What a gem  ·  **layer:** Jobs and scheduling
+- **book:** Chapter 1, page 45
+- **source:** https://github.com/rails/solid_queue
+
+Database-backed Active Job adapter that keeps background processing inside Rails infrastructure.
+
+```ruby
+# Gemfile
+gem "solid_queue"
+
+# config/application.rb
+config.active_job.queue_adapter = :solid_queue
+```
+
+### GoodJob
+
+- **gem:** `good_job`  ·  install: `bundle add good_job`
+- **kind:** What a gem  ·  **layer:** Jobs and scheduling
+- **book:** Chapter 3, page 77
+- **source:** https://github.com/bensheldon/good_job
+
+PostgreSQL-backed Active Job processor with threads, scheduling, and a dashboard.
+
+```ruby
+# Gemfile
+gem "good_job"
+
+# config/application.rb
+config.active_job.queue_adapter = :good_job
+```
+
+### GlobalID
+
+- **gem:** `globalid`  ·  install: `bundle add globalid`
+- **kind:** Inline recommendation  ·  **layer:** Jobs and scheduling
+- **book:** Chapter 3, page 81
+- **source:** https://github.com/rails/globalid
+
+Represents any model as a URI (gid://app/User/1) so records can be enqueued for background jobs and reloaded from the database when the job runs.
+
+```ruby
+gid = user.to_global_id.to_s   # "gid://app/User/1"
+
+GlobalID::Locator.locate(gid)   # => #<User id: 1>
+```
+
+### active_job-performs
+
+- **gem:** `active_job-performs`  ·  install: `bundle add active_job-performs`
+- **kind:** Inline recommendation  ·  **layer:** Jobs and scheduling
+- **book:** Chapters 4 and 13, page 122
+- **source:** https://github.com/kaspth/active_job-performs
+
+Adds a performs macro so models can enqueue convention-based jobs without hand-written job classes.
+
+```ruby
+class Post < ApplicationRecord
+  performs :generate_summary
+
+  def generate_summary
+    summaries.create!(body: "...")
+  end
+end
+```
+
+### Acidic Job
+
+- **gem:** `acidic_job`  ·  install: `bundle add acidic_job`
+- **kind:** What a gem  ·  **layer:** Jobs and scheduling
+- **book:** Chapter 13, page 370
+- **source:** https://github.com/fractaledmind/acidic_job
+
+Durable Active Job workflows with database-backed progress state.
+
+```ruby
+class ImportCourseJob < ApplicationJob
+  include AcidicJob::Workflow
+
+  def perform(course_id)
+    with_acidity { step :download, course_id }
+  end
+end
+```
+
+## 4. Architecture and design
+
+*Service objects, events, and dependency boundaries.* (8 gems)
+
+### Active Event Store
+
+- **gem:** `active_event_store`  ·  install: `bundle add active_event_store`
+- **kind:** What a gem  ·  **layer:** Architecture and design
+- **book:** Chapter 4, page 106
+- **source:** https://github.com/palkan/active_event_store
+
+Event-driven Rails conventions built on top of Rails Event Store.
+
+```ruby
+class UserUpdated < ActiveEventStore::Event
+  attribute :user_id, :integer
+end
+
+ActiveEventStore.event_store.publish(UserUpdated.new(user_id: user.id))
+```
+
+### Downstream
+
+- **gem:** `downstream`  ·  install: `bundle add downstream`
+- **kind:** What a gem  ·  **layer:** Architecture and design
+- **book:** Chapter 4, page 106
+- **source:** https://github.com/palkan/downstream
+
+Rails-friendly event and listener abstractions for decoupling domain reactions.
+
+```ruby
+class UserUpdatedEvent < Downstream::Event.define(:user)
+end
+
+Downstream.publish(UserUpdatedEvent.new(user: current_user))
+```
+
+### active_record-associated_object
+
+- **gem:** `active_record-associated_object`  ·  install: `bundle add active_record-associated_object`
+- **kind:** What a gem  ·  **layer:** Architecture and design
+- **book:** Chapter 4, page 119
+- **source:** https://github.com/kaspth/active_record-associated_object
+
+Adds a convention for model-owned collaborator objects through a has_object macro.
+
+```ruby
+class User < ApplicationRecord
+  has_object :preferences
+end
+
+user.preferences.time_zone
+```
+
+### dry-effects
+
+- **gem:** `dry-effects`  ·  install: `bundle add dry-effects`
+- **kind:** What a gem  ·  **layer:** Architecture and design
+- **book:** Chapter 4, page 125
+- **source:** https://dry-rb.org/gems/dry-effects
+
+Algebraic effects for passing explicit context without Current-style global state.
+
+```ruby
+include Dry::Effects.Reader(:current_user)
+
+def call
+  AuditLog.create!(user: current_user)
+end
+```
+
+### Interactor
+
+- **gem:** `interactor`  ·  install: `bundle add interactor`
+- **kind:** What a gem  ·  **layer:** Architecture and design
+- **book:** Chapter 5, page 136
+- **source:** https://github.com/collectiveidea/interactor
+
+Service object convention with success/failure result objects and organizers.
+
+```ruby
+class PublishPost
+  include Interactor
+
+  def call
+    context.post.update!(published: true)
+  rescue ActiveRecord::RecordInvalid => error
+    context.fail!(error: error.message)
+  end
+end
+```
+
+### dry-initializer
+
+- **gem:** `dry-initializer`  ·  install: `bundle add dry-initializer`
+- **kind:** Inline recommendation  ·  **layer:** Architecture and design
+- **book:** Chapters 5 and 12, page 137
+- **source:** https://dry-rb.org/gems/dry-initializer
+
+Declarative initializer DSL for service objects and components.
+
+```ruby
+class PublishPost
+  extend Dry::Initializer
+
+  param :post
+  option :notifier, default: proc { PostDelivery }
+end
+```
+
+### dry-monads
+
+- **gem:** `dry-monads`  ·  install: `bundle add dry-monads`
+- **kind:** What a gem  ·  **layer:** Architecture and design
+- **book:** Chapter 5, page 137
+- **source:** https://dry-rb.org/gems/dry-monads
+
+Result, Maybe, and other monads for explicit service return values.
+
+```ruby
+include Dry::Monads[:result]
+
+def call(post)
+  post.update(published: true) ? Success(post) : Failure(post.errors)
+end
+```
+
+### dry-container
+
+- **gem:** `dry-container`  ·  install: `bundle add dry-container`
+- **kind:** Inline recommendation  ·  **layer:** Architecture and design
+- **book:** Chapter 6, page 168
+- **source:** https://dry-rb.org/gems/dry-container
+
+Simple dependency container for registering and resolving collaborators.
+
+```ruby
+container = Dry::Container.new
+container.register("repos.posts") { PostRepository.new }
+
+container.resolve("repos.posts").find(1)
+```
+
+## 5. State and workflow
+
+*Modeling lifecycles and state transitions.* (3 gems)
+
+### rails-pattern_matching
+
+- **gem:** `rails-pattern_matching`  ·  install: `bundle add rails-pattern_matching`
+- **kind:** Inline recommendation  ·  **layer:** State and workflow
+- **book:** Chapter 7, page 178
+- **source:** https://github.com/kddnewton/rails-pattern_matching
+
+Pattern matching support for Active Model and Active Record objects.
+
+```ruby
+case post
+in { state: "draft", author: { admin?: true } }
+  post.publish!
+else
+  false
+end
+```
+
+### workflow
+
+- **gem:** `workflow`  ·  install: `bundle add workflow`
+- **kind:** What a gem  ·  **layer:** State and workflow
+- **book:** Chapter 7, page 187
+- **source:** https://github.com/geekq/workflow
+
+Finite-state machine DSL with transition diagrams and introspection APIs.
+
+```ruby
+class Post
+  include Workflow
+
+  workflow do
+    state :draft do
+      event :publish, transitions_to: :published
+    end
+    state :published
+  end
+end
+```
+
+### workflow-activerecord
+
+- **gem:** `workflow-activerecord`  ·  install: `bundle add workflow-activerecord`
+- **kind:** Inline recommendation  ·  **layer:** State and workflow
+- **book:** Chapter 7, page 187
+- **source:** https://github.com/geekq/workflow-activerecord
+
+Active Record persistence integration for the workflow state-machine gem.
+
+```ruby
+class Post < ApplicationRecord
+  include WorkflowActiverecord
+  workflow_column :state
+end
+```
+
+## 6. Controllers and input
+
+*Turning params into safe, scoped queries.* (4 gems)
+
+### after_commit_everywhere
+
+- **gem:** `after_commit_everywhere`  ·  install: `bundle add after_commit_everywhere`
+- **kind:** Inline recommendation  ·  **layer:** Controllers and input
+- **book:** Chapter 8, page 214
+- **source:** https://github.com/Envek/after_commit_everywhere
+
+Transaction callbacks outside Active Record models.
+
+```ruby
+class InviteUser
+  include AfterCommitEverywhere
+
+  def call
+    after_commit { UserMailer.invited(user).deliver_later }
+  end
+end
+```
+
+### filterameter
+
+- **gem:** `filterameter`  ·  install: `bundle add filterameter`
+- **kind:** Inline recommendation  ·  **layer:** Controllers and input
+- **book:** Chapter 8, page 234
+- **source:** https://github.com/RockSolt/filterameter
+
+Controller filtering DSL for readable parameter-to-scope pipelines.
+
+```ruby
+class PostsController < ApplicationController
+  filterameter :index do
+    filter :status
+    filter :author_id
+  end
+end
+```
+
+### has_scope
+
+- **gem:** `has_scope`  ·  install: `bundle add has_scope`
+- **kind:** Inline recommendation  ·  **layer:** Controllers and input
+- **book:** Chapter 8, page 234
+- **source:** https://github.com/heartcombo/has_scope
+
+Maps controller parameters to Active Record scopes.
+
+```ruby
+class PostsController < ApplicationController
+  has_scope :published, type: :boolean
+
+  def index
+    @posts = apply_scopes(Post).all
+  end
+end
+```
+
+### Rubanok
+
+- **gem:** `rubanok`  ·  install: `bundle add rubanok`
+- **kind:** What a gem  ·  **layer:** Controllers and input
+- **book:** Chapter 8, page 236
+- **source:** https://github.com/palkan/rubanok
+
+Parameter-based transformation pipelines for filters and other data flows.
+
+```ruby
+class PostFilter < Rubanok::Processor
+  map :status do |status:|
+    raw.where(status: status)
+  end
+end
+
+PostFilter.call(Post.all, params)
+```
+
+## 7. Presentation and JSON
+
+*Presenters and serializers at the view boundary.* (4 gems)
+
+### Keynote
+
+- **gem:** `keynote`  ·  install: `bundle add keynote`
+- **kind:** What a gem  ·  **layer:** Presentation and JSON
+- **book:** Chapter 9, page 251
+- **source:** https://github.com/evilmartians/keynote
+
+Presenter objects with helper integration, test support, and presenter caching.
+
+```ruby
+class PostPresenter < Keynote::Presenter
+  presents :post
+
+  def status_label = post.published? ? "Published" : "Draft"
+end
+```
+
+### Jbuilder
+
+- **gem:** `jbuilder`  ·  install: `bundle add jbuilder`
+- **kind:** Inline recommendation  ·  **layer:** Presentation and JSON
+- **book:** Chapter 9, page 256
+- **source:** https://github.com/rails/jbuilder
+
+Template engine for building JSON in views, giving non-trivial API payloads the same partials and layout tooling that ERB gives HTML.
+
+```ruby
+# app/views/posts/show.json.jbuilder
+json.title  @post.title
+json.author @post.author.name
+json.comments @post.comments, :id, :body
+```
+
+### Alba
+
+- **gem:** `alba`  ·  install: `bundle add alba`
+- **kind:** What a gem  ·  **layer:** Presentation and JSON
+- **book:** Chapter 9, page 258
+- **source:** https://github.com/okuramasafumi/alba
+
+Fast Ruby JSON serialization with a compact resource DSL.
+
+```ruby
+class PostResource
+  include Alba::Resource
+  attributes :id, :title
+  attribute(:draft) { |post| post.draft? }
+end
+```
+
+### Typelizer
+
+- **gem:** `typelizer`  ·  install: `bundle add typelizer`
+- **kind:** What a gem  ·  **layer:** Presentation and JSON
+- **book:** Chapter 9, page 260
+- **source:** https://github.com/skryukov/typelizer
+
+Generates TypeScript definitions from Ruby serializers and models.
+
+```ruby
+class PostSerializer
+  include Alba::Resource
+  include Typelizer::DSL
+
+  typelize id: :integer, title: :string
+end
+```
+
+## 8. Views and frontend
+
+*Component-based HTML and template abstractions.* (4 gems)
+
+### ViewComponent
+
+- **gem:** `view_component`  ·  install: `bundle add view_component`
+- **kind:** What a gem  ·  **layer:** Views and frontend
+- **book:** Chapter 12, page 331
+- **source:** https://viewcomponent.org
+
+Ruby object plus template abstraction for reusable, testable Rails view components.
+
+```ruby
+class BadgeComponent < ViewComponent::Base
+  def initialize(text:)
+    @text = text
+  end
+end
+
+render BadgeComponent.new(text: "Published")
+```
+
+### Papercraft
+
+- **gem:** `papercraft`  ·  install: `bundle add papercraft`
+- **kind:** Inline recommendation  ·  **layer:** Views and frontend
+- **book:** Chapter 12, page 336
+- **source:** https://github.com/digital-fabric/papercraft
+
+Functional Ruby HTML templating alternative to ERB-style templates.
+
+```ruby
+PostCard = Papercraft.html do |post:|
+  article do
+    h2 post.title
+  end
+end
+```
+
+### Phlex
+
+- **gem:** `phlex`  ·  install: `bundle add phlex`
+- **kind:** Inline recommendation  ·  **layer:** Views and frontend
+- **book:** Chapter 12, page 336
+- **source:** https://www.phlex.fun
+
+Ruby classes that generate HTML without separate template files.
+
+```ruby
+class Title < Phlex::HTML
+  def view_template
+    h1 { "Layered Rails" }
+  end
+end
+```
+
+### Lookbook
+
+- **gem:** `lookbook`  ·  install: `bundle add lookbook`
+- **kind:** Inline recommendation  ·  **layer:** Views and frontend
+- **book:** Chapter 14, page 395
+- **source:** https://github.com/ViewComponent/lookbook
+
+Interactive preview UI and workbench for ViewComponents, toggled on in development and browsable at /lookbook.
+
+```ruby
+# Gemfile
+gem "lookbook", group: :development
+
+class BadgeComponentPreview < ViewComponent::Preview
+  def default
+    render BadgeComponent.new(text: "Published")
+  end
+end
+# Browse previews at /lookbook
+```
+
+## 9. Authorization and notification
+
+*Who may act — and who gets told.* (4 gems)
+
+### Action Policy
+
+- **gem:** `action_policy`  ·  install: `bundle add action_policy`
+- **kind:** What a gem  ·  **layer:** Authorization and notification
+- **book:** Chapter 10, page 280
+- **source:** https://github.com/palkan/action_policy
+
+Authorization framework centered on policy objects, performance, and testing support.
+
+```ruby
+class PostPolicy < ApplicationPolicy
+  def update?
+    user.admin? || record.author_id == user.id
+  end
+end
+
+authorize! @post, to: :update?
+```
+
+### action_native_push
+
+- **gem:** `action_native_push`  ·  install: `bundle add action_native_push`
+- **kind:** Inline recommendation  ·  **layer:** Authorization and notification
+- **book:** Chapter 11, page 297
+- **source:** https://github.com/basecamp/action_native_push
+
+Basecamp's toolkit for sending native mobile push notifications from Rails to registered device tokens, slotting in alongside a notifications layer.
+
+```ruby
+# Gemfile
+gem "action_native_push"
+
+# Push to a registered device token:
+ActionNativePush.push(to: device_token,
+  title: "New post", body: post.title)
+```
+
+### Active Delivery
+
+- **gem:** `active_delivery`  ·  install: `bundle add active_delivery`
+- **kind:** What a gem  ·  **layer:** Authorization and notification
+- **book:** Chapter 11, page 304
+- **source:** https://github.com/palkan/active_delivery
+
+Notification layer with delivery objects and Action Mailer-like APIs.
+
+```ruby
+class PostDelivery < ApplicationDelivery
+  mailer :post_mailer
+
+  def published(post)
+    mail(to: params[:user].email, post: post)
+  end
+end
+```
+
+### Noticed
+
+- **gem:** `noticed`  ·  install: `bundle add noticed`
+- **kind:** What a gem  ·  **layer:** Authorization and notification
+- **book:** Chapter 11, page 309
+- **source:** https://github.com/excid3/noticed
+
+Notification objects that define delivery channels and per-channel payloads.
+
+```ruby
+class PostPublishedNotification < Noticed::Event
+  deliver_by :email, mailer: "PostMailer", method: :published
+  deliver_by :database
+end
+
+PostPublishedNotification.with(post: post).deliver_later(user)
+```
+
+## 10. Media and realtime
+
+*Files, images, and streaming.* (2 gems)
+
+### ImageProcessing
+
+- **gem:** `image_processing`  ·  install: `bundle add image_processing`
+- **kind:** Inline recommendation  ·  **layer:** Media and realtime
+- **book:** Chapter 3, page 86
+- **source:** https://github.com/janko/image_processing
+
+Uniform Ruby API over libvips and ImageMagick that powers Active Storage variants for resizing, cropping, and format conversion.
+
+```ruby
+# Gemfile
+gem "image_processing", "~> 1.13"
+
+# Active Storage variant (libvips or ImageMagick):
+user.avatar.variant(resize_to_limit: [300, 300]).processed
+```
+
+### imgproxy-rails
+
+- **gem:** `imgproxy-rails`  ·  install: `bundle add imgproxy-rails`
+- **kind:** Inline recommendation  ·  **layer:** Media and realtime
+- **book:** Chapter 15, page 428
+- **source:** https://github.com/imgproxy/imgproxy-rails
+
+Integrates imgproxy with Active Storage variants so image transformation can move out of Rails.
+
+```ruby
+# Gemfile
+gem "imgproxy-rails"
+
+image_tag user.avatar.variant(resize_to_limit: [300, 300])
+```
+
+## 11. AI and agents
+
+*LLMs, embeddings, agents, and MCP inside Rails.* (8 gems)
+
+### Ruby OpenAI
+
+- **gem:** `ruby-openai`  ·  install: `bundle add ruby-openai`
+- **kind:** What a gem  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 341
+- **source:** https://github.com/alexrudall/ruby-openai
+
+OpenAI-compatible Ruby client for chat, embeddings, streaming, and related LLM APIs.
+
+```ruby
+client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY"))
+response = client.chat(parameters: {
+  model: "gpt-4o-mini",
+  messages: [{role: "user", content: "Summarize this post"}]
+})
+```
+
+### Active Agent
+
+- **gem:** `activeagent`  ·  install: `bundle add activeagent`
+- **kind:** What a gem  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 347
+- **source:** https://github.com/activeagents/activeagent
+
+Rails-oriented agent abstraction for organizing prompts, generations, and LLM integrations.
+
+```ruby
+class SummaryAgent < ApplicationAgent
+  def summarize(post)
+    prompt(message: "Summarize: #{post.body}")
+  end
+end
+```
+
+### ruby_llm-schema
+
+- **gem:** `ruby_llm-schema`  ·  install: `bundle add ruby_llm-schema`
+- **kind:** Inline recommendation  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 361
+- **source:** https://github.com/danielfriis/ruby_llm-schema
+
+Ruby DSL for building JSON Schemas used in structured LLM responses and tools.
+
+```ruby
+schema = RubyLLM::Schema.create do
+  string :content, description: "Summary"
+  array :keywords, of: :string
+end
+
+schema.to_json_schema
+```
+
+### RubyLLM
+
+- **gem:** `ruby_llm`  ·  install: `bundle add ruby_llm`
+- **kind:** What a gem  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 361
+- **source:** https://rubyllm.com
+
+Unified Ruby interface and ecosystem for major LLM providers.
+
+```ruby
+chat = RubyLLM.chat(model: "gpt-4o-mini")
+chat.ask("Summarize this in one sentence.")
+```
+
+### prompt_engine
+
+- **gem:** `prompt_engine`  ·  install: `bundle add prompt_engine`
+- **kind:** Inline recommendation  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 375
+- **source:** https://github.com/aviflombaum/prompt_engine
+
+Rails engine for database-backed prompt storage and an admin UI.
+
+```ruby
+# config/routes.rb
+mount PromptEngine::Engine => "/prompts"
+
+prompt = PromptEngine::Prompt.find_by!(key: "summary")
+prompt.render(post: post)
+```
+
+### baran
+
+- **gem:** `baran`  ·  install: `bundle add baran`
+- **kind:** Inline recommendation  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 383
+- **source:** https://github.com/moeki0/baran
+
+Text splitter for chunking large documents before embedding or retrieval.
+
+```ruby
+splitter = Baran::Splitter.new(chunk_size: 800)
+chunks = splitter.call(course.transcript)
+
+chunks.each { |chunk| DocumentChunk.create!(body: chunk) }
+```
+
+### Neighbor
+
+- **gem:** `neighbor`  ·  install: `bundle add neighbor`
+- **kind:** Inline recommendation  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 384
+- **source:** https://github.com/ankane/neighbor
+
+Nearest-neighbor vector search for Rails models, commonly used for embeddings.
+
+```ruby
+class DocumentChunk < ApplicationRecord
+  has_neighbors :embedding
+end
+
+DocumentChunk.nearest_neighbors(:embedding, query_embedding, distance: "cosine").limit(5)
+```
+
+### Fast MCP
+
+- **gem:** `fast-mcp`  ·  install: `bundle add fast-mcp`
+- **kind:** What a gem  ·  **layer:** AI and agents
+- **book:** Chapter 13, page 386
+- **source:** https://github.com/yjacquin/fast-mcp
+
+Ruby toolkit for defining MCP tools, resources, and transports.
+
+```ruby
+class CreateTagTool < FastMcp::Tool
+  description "Create a tag"
+
+  def call(name:)
+    Tag.create!(name: name)
+  end
+end
+```
+
+## 12. Configuration and infrastructure
+
+*Config objects, env, and observability.* (3 gems)
+
+### dotenv
+
+- **gem:** `dotenv`  ·  install: `bundle add dotenv`
+- **kind:** Inline recommendation  ·  **layer:** Configuration and infrastructure
+- **book:** Chapter 14, page 394
+- **source:** https://github.com/bkeepers/dotenv
+
+Loads environment variables from .env files for local development.
+
+```ruby
+# Gemfile
+gem "dotenv-rails", groups: [:development, :test]
+
+# .env
+OPENAI_API_KEY=sk-local
+```
+
+### Anyway Config
+
+- **gem:** `anyway_config`  ·  install: `bundle add anyway_config`
+- **kind:** What a gem  ·  **layer:** Configuration and infrastructure
+- **book:** Chapter 14, page 404
+- **source:** https://github.com/palkan/anyway_config
+
+Typed, named configuration objects that can read from files, env vars, and other sources.
+
+```ruby
+class GithubConfig < Anyway::Config
+  attr_config :token, :repo
+end
+
+GithubConfig.new.token
+```
+
+### Yabeda
+
+- **gem:** `yabeda`  ·  install: `bundle add yabeda`
+- **kind:** What a gem  ·  **layer:** Configuration and infrastructure
+- **book:** Chapter 15, page 422
+- **source:** https://github.com/yabeda-rb/yabeda
+
+Instrumentation framework with a standard metrics API and exporter adapters.
+
+```ruby
+Yabeda.configure do
+  counter :github_api_calls_total
+end
+
+Yabeda.github_api_calls_total.increment
+```
+
+## 13. Testing and quality
+
+*Benchmarks, linters, and test tooling.* (12 gems)
+
+### trace_location
+
+- **gem:** `trace_location`  ·  install: `bundle add trace_location`
+- **kind:** What a gem  ·  **layer:** Testing and quality
+- **book:** Chapter 1, page 36
+- **source:** https://github.com/yhirano55/trace_location
+
+Runtime tracing helper for seeing which Ruby methods are touched during a request or operation.
+
+```ruby
+require "trace_location"
+
+request = Rack::MockRequest.env_for("http://example.test")
+TraceLocation.trace(format: :log) do
+  Rails.application.call(request)
+end
+```
+
+### gvl-tracing
+
+- **gem:** `gvl-tracing`  ·  install: `bundle add gvl-tracing`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 1, page 42
+- **source:** https://github.com/ivoanjo/gvl-tracing
+
+Produces a timeline of Global VM Lock usage that can be opened in Perfetto.
+
+```ruby
+require "gvl-tracing"
+
+GvlTracing.start("tmp/gvl.json")
+Thread.new { 5_000_000.times { 1 + 1 } }.join
+GvlTracing.stop
+```
+
+### gvltools
+
+- **gem:** `gvltools`  ·  install: `bundle add gvltools`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 1, page 42
+- **source:** https://github.com/Shopify/gvltools
+
+Instrumentation helpers for measuring Ruby Global VM Lock behavior on threaded workloads.
+
+```ruby
+# Gemfile
+gem "gvltools", group: :development
+
+# Wrap a representative workload and inspect the reported GVL timing.
+bundle exec ruby script/profile_gvl.rb
+```
+
+### benchmark-ips
+
+- **gem:** `benchmark-ips`  ·  install: `bundle add benchmark-ips`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 2, page 69
+- **source:** https://github.com/evanphx/benchmark-ips
+
+Iterations-per-second benchmarking for comparing Ruby implementations.
+
+```ruby
+require "benchmark/ips"
+
+Benchmark.ips do |x|
+  x.report("scope") { Post.published.to_a }
+  x.compare!
+end
+```
+
+### benchmark-memory
+
+- **gem:** `benchmark-memory`  ·  install: `bundle add benchmark-memory`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 2, page 70
+- **source:** https://github.com/michaelherold/benchmark-memory
+
+Memory allocation benchmarking for Ruby code paths.
+
+```ruby
+require "benchmark/memory"
+
+Benchmark.memory do |x|
+  x.report("serializer") { PostSerializer.new(Post.first).as_json }
+  x.compare!
+end
+```
+
+### Attractor
+
+- **gem:** `attractor`  ·  install: `bundle add attractor`
+- **kind:** What a gem  ·  **layer:** Testing and quality
+- **book:** Chapter 2, page 72
+- **source:** https://github.com/julianrubisch/attractor
+
+Visualizes churn and complexity so large refactoring targets become obvious.
+
+```ruby
+# Gemfile
+gem "attractor", group: :development
+
+bundle exec attractor report
+```
+
+### Flog
+
+- **gem:** `flog`  ·  install: `bundle add flog`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 2, page 72
+- **source:** https://github.com/seattlerb/flog
+
+Ruby code complexity reporter used to spot hard-to-maintain classes.
+
+```ruby
+# Gemfile
+gem "flog", group: :development
+
+bundle exec flog app/models app/services
+```
+
+### callback_hell
+
+- **gem:** `callback_hell`  ·  install: `bundle add callback_hell`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 4, page 101
+- **source:** https://github.com/evilmartians/callback_hell
+
+Audits Rails models for callback-heavy designs.
+
+```ruby
+# Gemfile
+gem "callback_hell", group: :development
+
+# Show callback counts by model.
+bundle exec rake ch:callbacks
+```
+
+### with_model
+
+- **gem:** `with_model`  ·  install: `bundle add with_model`
+- **kind:** What a gem  ·  **layer:** Testing and quality
+- **book:** Chapter 4, page 113
+- **source:** https://github.com/Casecommons/with_model
+
+Builds throwaway Active Record models and tables inside tests.
+
+```ruby
+with_model :Widget do
+  table { |t| t.string :name }
+  model { validates :name, presence: true }
+end
+
+expect(Widget.new).not_to be_valid
+```
+
+### erb_lint
+
+- **gem:** `erb_lint`  ·  install: `bundle add erb_lint`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 12, page 324
+- **source:** https://github.com/Shopify/erb-lint
+
+Linter for ERB templates, including rules for view partial hygiene.
+
+```ruby
+# Gemfile
+gem "erb_lint", group: :development
+
+# Lint ERB templates.
+bundle exec erb_lint app/views
+```
+
+### Capybara
+
+- **gem:** `capybara`  ·  install: `bundle add capybara`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 12, page 333
+- **source:** https://github.com/teamcapybara/capybara
+
+High-level DSL for querying and asserting rendered HTML; used in the book to test ViewComponent output and to drive integration and system tests.
+
+```ruby
+# In a component or system test:
+render_inline(BadgeComponent.new(text: "Published"))
+assert_selector "span.badge", text: "Published"
+```
+
+### WebMock
+
+- **gem:** `webmock`  ·  install: `bundle add webmock`
+- **kind:** Inline recommendation  ·  **layer:** Testing and quality
+- **book:** Chapter 14, page 398
+- **source:** https://github.com/bblimke/webmock
+
+Stubs and asserts outbound HTTP requests in tests.
+
+```ruby
+stub_request(:get, "https://api.example.test/users/1")
+  .to_return(status: 200, body: {name: "Ada"}.to_json)
+
+Net::HTTP.get(URI("https://api.example.test/users/1"))
+```
+
+---
+
+Independent, fan-made catalogue. Verify each gem's current docs before production use.

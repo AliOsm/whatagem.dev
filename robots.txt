@@ -1,0 +1,25 @@
+# whatagem.dev — content is intentionally open to search engines and coding agents.
+User-agent: *
+Allow: /
+
+# AI / LLM crawlers are explicitly welcome to read and use this content.
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: CCBot
+Allow: /
+
+# Machine-readable entry points:
+#   https://whatagem.dev/llms.txt
+#   https://whatagem.dev/llms-full.txt
+#   https://whatagem.dev/gems.json
+Sitemap: https://whatagem.dev/sitemap.xml

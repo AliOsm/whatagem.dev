@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Layered Rails Gems — A Field Guide</title>
+  <meta name="description" content="A field guide to 70 Ruby and Rails gems recommended in Layered Design for Ruby on Rails Applications, Second Edition — organized by architectural layer, with book page references and minimal usage sketches.">
+  <link rel="canonical" href="https://whatagem.dev/">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f7f0e9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#150d0e" media="(prefers-color-scheme: dark)">
+  <meta name="author" content="Ali Hamdi Ali Fadel">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Layered Rails Gems">
+  <meta property="og:title" content="Layered Rails Gems — A Field Guide">
+  <meta property="og:description" content="70 Ruby and Rails gems recommended in Layered Design for Ruby on Rails Applications, organized by architectural layer.">
+  <meta property="og:url" content="https://whatagem.dev/">
+  <meta property="og:image" content="https://whatagem.dev/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Layered Rails Gems — A Field Guide">
+  <meta name="twitter:description" content="70 Ruby and Rails gems recommended in Layered Design for Ruby on Rails Applications, organized by architectural layer.">
+  <meta name="twitter:image" content="https://whatagem.dev/assets/og.png">
+  <link rel="alternate" type="application/json" href="/gems.json" title="Gem catalogue as JSON">
+  <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Full catalogue for LLMs">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"Layered Rails Gems","alternateName":"whatagem.dev","description":"A catalogue of 70 Ruby and Rails gems recommended in Layered Design for Ruby on Rails Applications, Second Edition, organized by architectural layer, each with a book page reference and a minimal usage example.","url":"https://whatagem.dev/","license":"https://whatagem.dev/","keywords":["Ruby","Ruby on Rails","gems","RubyGems","software architecture","layered design"],"creator":{"@type":"Person","name":"Ali Hamdi Ali Fadel"},"isBasedOn":{"@type":"Book","name":"Layered Design for Ruby on Rails Applications, Second Edition","author":{"@type":"Person","name":"Vladimir Dementyev"},"publisher":{"@type":"Organization","name":"Packt"},"datePublished":"2025-12-22"},"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://whatagem.dev/gems.json"},{"@type":"DataDownload","encodingFormat":"text/markdown","contentUrl":"https://whatagem.dev/llms-full.txt"}]}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Hanken+Grotesk:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("lrg-theme");
+        var theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="container">
+        <nav class="topbar">
+          <a class="brand" href="#top" aria-label="Layered Rails Gems, home">
+            <svg class="emblem" viewBox="0 0 100 100" aria-hidden="true">
+              <defs>
+                <linearGradient id="gTop" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#ff8a80"/><stop offset="1" stop-color="#d21f24"/>
+                </linearGradient>
+                <linearGradient id="gBot" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#b0161a"/><stop offset="1" stop-color="#7d0f13"/>
+                </linearGradient>
+              </defs>
+              <polygon points="28,14 72,14 90,40 50,44" fill="url(#gTop)"/>
+              <polygon points="10,40 28,14 50,44" fill="#e0403f"/>
+              <polygon points="90,40 72,14 50,44" fill="#c11d22"/>
+              <polygon points="10,40 50,44 50,92" fill="url(#gBot)"/>
+              <polygon points="90,40 50,44 50,92" fill="#8f1216"/>
+              <polygon points="10,40 90,40 50,44" fill="#ff9d94" opacity="0.65"/>
+            </svg>
+            <span class="brand-word"><b>Layered Rails Gems</b><span>What&nbsp;a&nbsp;gem · field&nbsp;guide</span></span>
+          </a>
+          <div class="topbar-actions">
+            <button class="pill theme-toggle" type="button" aria-label="Toggle color theme">
+              <span class="t-light" aria-hidden="true">◑<span class="lbl">&nbsp;Dark</span></span><span class="t-dark" aria-hidden="true">◐<span class="lbl">&nbsp;Light</span></span>
+            </button>
+            <a class="pill" href="https://github.com/PacktPublishing/Layered-Design-for-Ruby-on-Rails-Applications-Second-Edition" target="_blank" rel="noopener"><span class="full">Companion code</span><span class="short">Code</span>&nbsp;↗</a>
+          </div>
+        </nav>
+
+        <div class="hero-grid" id="top">
+          <div class="hero-copy">
+            <p class="eyebrow">A field guide to good gems, by layer</p>
+            <h1>Layered<br>Rails <span class="accent">Gems</span></h1>
+            <p class="lede">
+              Every gem that <cite>Layered Design for Ruby on Rails Applications, Second Edition</cite> flags as a good tool — the formal <b>“What a gem”</b> callouts and the inline recommendations — mapped to the architectural layer it belongs to, each with a book page reference and a minimal usage sketch.
+            </p>
+            <div class="hero-meta">
+              <span><b>Second</b> Edition</span>
+              <span><b>Dec 2025</b> Packt</span>
+              <span><b id="mLayers">13</b> layers</span>
+              <span><b id="mGems">70</b> gems</span>
+            </div>
+          </div>
+
+          <aside class="inspector" aria-label="Catalogue snapshot">
+            <div class="insp-bar"><span class="dots"><i></i><i></i><i></i></span><b>bin/rails gems:inspect</b></div>
+            <div class="insp-body">
+              <div class="insp-cmd" id="cmd" aria-hidden="true"></div>
+              <div class="insp-stats">
+                <div><b data-count="70" id="sTotal">0</b><span>gems catalogued</span></div>
+                <div><b data-count="36" id="sCallout">0</b><span>“What a gem” callouts</span></div>
+                <div><b data-count="34" id="sInline">0</b><span>inline picks</span></div>
+                <div><b data-count="13" id="sAreas">0</b><span>architecture layers</span></div>
+              </div>
+              <p class="insp-foot"><b>Source:</b> EPUB gem links &amp; “What a gem” callouts, cross-checked against the PDF for page numbers. Examples are original minimal sketches — read each gem’s own docs before production.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="container">
+        <div class="toolbar-row">
+          <label class="search-wrap">
+            <span class="icon" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></span>
+            <input id="search" class="search" type="search" placeholder="Search 70 gems — name, layer, chapter, page, or what it does…" aria-label="Search gems" autocomplete="off">
+            <kbd aria-hidden="true">/</kbd>
+          </label>
+          <div class="segmented" role="group" aria-label="Filter by recommendation type">
+            <button type="button" data-kind="All" aria-pressed="true">All</button>
+            <button type="button" data-kind="What a gem" aria-pressed="false">✦ What a gem</button>
+            <button type="button" data-kind="Inline recommendation" aria-pressed="false">Inline</button>
+          </div>
+          <div class="result-count" id="resultCount"><b>70</b> gems</div>
+        </div>
+        <div class="chips" id="chips" aria-label="Jump to a layer"></div>
+      </div>
+    </div>
+
+    <main class="container">
+      <section class="scope" aria-label="What counts as a good gem here">
+        <div>
+          <h2>What made the cut</h2>
+          <p>Formal “What a gem” callouts plus gems the book actively recommends or reaches for in its examples. Left out on purpose: cautionary examples (a DSL shown as a query pitfall, schedulers shown as an anti-pattern), pure framework plumbing described in passing, and libraries named only to illustrate a category rather than endorse it.</p>
+        </div>
+        <div class="scope-key">
+          <div><span class="k-star">✦</span> <b>36</b> “What a gem” callouts</div>
+          <div><span class="k-star">~</span> <b>34</b> inline recommendations</div>
+          <div><span class="k-star">▲</span> across <b>13</b> layers, chapters 1–15</div>
+        </div>
+      </section>
+
+      <div id="layers"></div>
+      <p class="empty" id="empty">No gems match <b id="emptyQ"></b>. Try another layer or clear the search.</p>
+    </main>
+
+    <footer class="site">
+      <div class="container foot-grid">
+        <div>
+          <div class="foot-title">
+            <svg width="20" height="20" viewBox="0 0 100 100" aria-hidden="true"><polygon points="28,14 72,14 90,40 50,44" fill="#d21f24"/><polygon points="10,40 50,44 50,92" fill="#8f1216"/><polygon points="90,40 50,44 50,92" fill="#7d0f13"/><polygon points="10,40 28,14 50,44" fill="#e0403f"/><polygon points="90,40 72,14 50,44" fill="#c11d22"/></svg>
+            Layered Rails Gems
+          </div>
+          <p>An independent, fan-made catalogue distilled from <b>Layered Design for Ruby on Rails Applications, Second Edition</b> (Vladimir Dementyev, Packt, December 2025). Gem names, links, and page numbers are drawn from the book; descriptions and code sketches are written fresh for this guide.</p>
+          <p>Not affiliated with the author or Packt. Every gem links to its official home — check current docs before shipping.</p>
+          <p class="foot-agents">Machine-readable for coding agents: <a href="/llms.txt">llms.txt</a> · <a href="/llms-full.txt">llms-full.txt</a> · <a href="/gems.json">gems.json</a></p>
+        </div>
+        <div>
+          <div class="foot-title" style="font-size:0.95rem;">The 13 layers</div>
+          <div class="foot-legend" id="legend"></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="assets/gems.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
