@@ -131,6 +131,8 @@
     .pill:hover { border-color: var(--line-2); color: var(--ink); }
     a.pill:hover { transform: translateY(-1px); }
     .pill:active { scale: 0.96; }
+    .pill.icon-only { width: 38px; padding: 0; justify-content: center; }
+    .pill.icon-only svg { display: block; }
     .theme-toggle { cursor: pointer; }
     .pill .short { display: none; }
     .theme-toggle .t-dark { display: none; }
@@ -363,6 +365,7 @@
       .topbar { gap: 10px; padding-bottom: 32px; }
       .topbar-actions { gap: 8px; }
       .topbar-actions .pill { height: 36px; padding: 0 12px; font-size: 0.78rem; }
+      .topbar-actions .pill.icon-only { width: 36px; padding: 0; }
       .pill .full { display: none; }
       .pill .short { display: inline; }
       .brand { min-width: 0; flex: 0 1 auto; }
