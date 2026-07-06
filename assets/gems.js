@@ -337,8 +337,8 @@ window.GEMS = [
     "chapter": "Chapter 8",
     "pdfPage": 234,
     "source": "https://github.com/RockSolt/filterameter",
-    "description": "Controller filtering DSL for readable parameter-to-scope pipelines.",
-    "example": "class PostsController < ApplicationController\n  filterameter :index do\n    filter :status\n    filter :author_id\n  end\nend"
+    "description": "Declare filters for attributes and scopes.",
+    "example": "class PostsController < ApplicationController\n  filter :status\n  filter :author_id\n\n  def index\n    @posts = build_query_from_filters\n  end\nend"
   },
   {
     "name": "has_scope",
